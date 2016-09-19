@@ -3,5 +3,3 @@
 
 Proposal - Best swift pattern for connecting with api - Requests, parsing json to models etc
 
-API: JSON serialization in Swift
-
