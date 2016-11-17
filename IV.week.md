@@ -1,23 +1,143 @@
-1. Install **Xcode**
-2. Install **brew**
-3. Install asdf package manager
-> https://github.com/asdf-vm/asdf-ruby
-4. Install ruby
-> https://github.com/asdf-vm/asdf-ruby
-> echo "ruby 2.2.3" >> ~/.tool-versions
-5. Enable screen sharing & ssh access 
-6. Copy ssh keys
-7. Adding your SSH key to the ssh-agent
-> eval "$(ssh-agent -s)"
-> ssh-add ~/.ssh/id_rsa
-8. Turn off automatic apps update (just download and inform)
-9. Turn off auto sleep & turn on after power failure
-10. Install: cocoapods, carthage, swiftenv, bundler
-11. Install gitlab-runner
-12. Turn on autologin
-13. Ethernet before wi-fi and add MACs to router settings
-14. Change computer name to sX-builds
-15. git settings
->git config --global user.email "builds@appunite.com"
->git config --global user.name "AppUnite Builds"
->git config --global url."git@git.appunite.com:".insteadOf https://git.appunite.com/
+
+# new tags
+
+simple as:
+
+```
+s1: xcode7.3.1
+s2: xcode8.1
+s3: xcode8.1
+s4: xcode8.0
+s5: xcode8.1
+```
+---
+
+# blade
+
+https://github.com/jondot/blade
+
+```bash
+$ cat Bladefile 
+```
+
+```ruby
+blades:
+  - source: assets/iTunesArtwork@2x.png
+    mount: Gistr/Images.xcassets/AppIcon.appiconset
+    contents: true
+```
+
+```bash
+$ blade --verbose
+```
+
+---
+
+# asdf package manager (ruby)
+
+https://github.com/asdf-vm/asdf
+https://github.com/asdf-vm/asdf-ruby
+
+```bash
+$ asdf local ruby 2.2.3
+```
+
+---
+
+# fastlane storage problem
+
+> $ vim fastlane/.env
+
+```bash
+GYM_OUTPUT_DIRECTORY="./"
+GYM_BUILD_PATH="./"
+GYM_DERIVED_DATA_PATH="./"
+GYM_BUILDLOG_PATH="./"
+GYM_ARCHIVE_PATH="./"
+```
+
+---
+
+# enterprice deploy
+
+- requier fastlane update
+- new env value
+
+```bash
+SIGH_PROFILE_ENTERPRISE=true
+```
+
+---
+
+# gitlab-ci.yml
+
+```yml
+before_script:
+  - export LANG=en_US.UTF-8
+  - xcrun swift -version
+  - xcodebuild -version
+  
+  # download and load envs
+  - python tools/download.py --token ${AUTO_CLOSE_TOKEN} --key-version ${token}
+  - source artifacts/.env-ci
+  
+  # install submodules
+  - git submodule update --init --recursive
+
+  # install bundler
+  - gem install bundler
+
+  # install gems, update pods repo
+  - bundle install --quiet
+  - bundle exec pod repo update --silent
+```
+
+---
+
+# private keychain
+
+```bash
+KEYCHAIN_NAME="ci.keychain"
+KEYCHAIN_PASSWORD="password"
+```
+
+```ruby
+private_lane :beta do |options|
+	...
+	create_keychain(unlock: true, timeout: false)
+
+	import_certificate(
+	    keychain_password: ENV["KEYCHAIN_PASSWORD"], 
+	    certificate_path: options[:certificate_path], 
+	    certificate_password: options[:certificate_password], 
+	    log_output:true
+	)
+	...
+end
+
+after_all do |lane|
+	...
+	delete_keychain
+end
+
+error do |lane, exception|
+	...
+	delete_keychain
+end
+
+```
+
+---
+
+#GitLab
+
+follow changes at:
+http://git.appunite.com/appunite/signing-tuts-ios
+
+---
+
+# protip
+
+In Xcode 8, place the cursor above a method or function & press "⌥ + ⌘ + /" to auto-generate a doc comment.
+
+source: https://twitter.com/felix_schwarz/status/774166330161233920
